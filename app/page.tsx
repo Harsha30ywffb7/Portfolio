@@ -1,0 +1,522 @@
+'use client';
+
+import { useEffect, useState } from 'react';
+import Image from 'next/image';
+import { RefreshCw, ChevronDown } from 'lucide-react';
+import { AsciiDither } from '@/components/ascii-dither';
+
+function Innov8MateMark({ dark, className }: { dark: boolean; className?: string }) {
+  return (
+    <Image
+      src="/innov8mateLogo.svg"
+      alt=""
+      width={22}
+      height={22}
+      aria-hidden
+      unoptimized
+      className={`inline-block shrink-0 object-contain align-[-0.18em] ${className ?? 'h-[0.92em] w-[0.92em] sm:h-[1em] sm:w-[1em]'}`}
+      style={dark ? { filter: 'invert(1)' } : undefined}
+    />
+  );
+}
+
+type BioVariant = 'intro' | 'about' | 'books';
+type Mode = 'butterfly' | 'fish' | 'orchids';
+
+type TimelineItem = { label: string; title: string; details: string[] };
+
+/** Matches `public/Harsha_vardhan_Resume.pdf` (FlowCV export). */
+const RESUME_PDF = '/Harsha_vardhan_Resume.pdf';
+const PORTFOLIO_SITE_HREF = 'https://harshavardhangulla.netlify.app/';
+const INNOV8MATE_HREF = 'https://innov8mate.com/';
+
+const EMAIL_LABEL = 'email';
+const OBFUSCATED_EMAIL = 'harshavardhan.gulla2003 [at] gmail [dot] com';
+const EMAIL_MATRIX_CHARS = '01[]{}<>/\\|#$%&*+-=~';
+const EMAIL_REVEAL_FRAMES = 18;
+
+function matrixRevealLabel(target: string, frame: number) {
+  const revealedChars = Math.floor((frame / EMAIL_REVEAL_FRAMES) * target.length);
+  return target.split('').map((char, i) => {
+    if (char === ' ' || i < revealedChars || frame >= EMAIL_REVEAL_FRAMES) return char;
+    return EMAIL_MATRIX_CHARS[(i * 7 + frame * 11) % EMAIL_MATRIX_CHARS.length];
+  }).join('');
+}
+
+const timelineItems: TimelineItem[] = [
+  {
+    label: 'Now',
+    title: 'Software Engineer, Buildbot Technologies.',
+    details: [],
+  },
+  {
+    label: 'Founder',
+    title: 'Innov8Mate.',
+    details: [
+      'MERN-style product for innovator collaboration — ideas through execution.',
+    ],
+  },
+  {
+    label: '2020–24',
+    title: 'B.Tech IT, ANITS.',
+    details: [
+      'Visakhapatnam — software engineering focus; coursework and projects aimed at full-stack delivery.',
+    ],
+  },
+];
+
+function BioContent({ dark, onSwitch, onNavigate, variant = 'intro' }: { dark: boolean; onSwitch: () => void; onNavigate?: (m: Mode) => void; variant?: BioVariant }) {
+  const [openTimelineIdx, setOpenTimelineIdx] = useState<number | null>(null);
+  const [emailRevealRun, setEmailRevealRun] = useState(0);
+  const [emailLabel, setEmailLabel] = useState(EMAIL_LABEL);
+  const [emailTargetLabel, setEmailTargetLabel] = useState(OBFUSCATED_EMAIL);
+  const [emailShowingAddress, setEmailShowingAddress] = useState(false);
+  const linkClass = dark
+    ? 'text-white underline underline-offset-4 decoration-white/40 hover:decoration-white transition-colors'
+    : 'text-neutral-900 underline underline-offset-4 decoration-neutral-300 hover:decoration-neutral-900 transition-colors';
+  const headingColor = dark ? 'text-white' : 'text-neutral-900';
+  const bodyColor = dark ? 'text-white/80' : 'text-neutral-600';
+  const footerColor = dark ? 'text-white/60' : 'text-neutral-500';
+  const footerLink = dark
+    ? 'underline underline-offset-4 hover:text-white transition-colors'
+    : 'underline underline-offset-4 hover:text-neutral-800 transition-colors';
+
+  useEffect(() => {
+    if (emailRevealRun === 0) return;
+
+    let frame = 0;
+    setEmailLabel(matrixRevealLabel(emailTargetLabel, frame));
+
+    const timer = window.setInterval(() => {
+      frame += 1;
+      setEmailLabel(matrixRevealLabel(emailTargetLabel, frame));
+      if (frame >= EMAIL_REVEAL_FRAMES) window.clearInterval(timer);
+    }, 32);
+
+    return () => window.clearInterval(timer);
+  }, [emailRevealRun, emailTargetLabel]);
+
+  const handleEmailClick = () => {
+    const nextTarget = emailShowingAddress ? EMAIL_LABEL : OBFUSCATED_EMAIL;
+    setEmailTargetLabel(nextTarget);
+    setEmailShowingAddress(!emailShowingAddress);
+    setEmailRevealRun((run) => run + 1);
+  };
+
+  return (
+    <>
+      <h1 className={`text-2xl sm:text-4xl font-bold mb-2 sm:mb-3 ${headingColor} flex items-center gap-3 sm:gap-4`}>
+        <span className="leading-none">Harshavardhan Gulla</span>
+        <button
+          onClick={onSwitch}
+          className={`p-1 transition-colors flex items-center ${dark ? 'text-white/50 hover:text-white' : 'text-neutral-400 hover:text-neutral-800'}`}
+          aria-label="Switch background"
+        >
+          <RefreshCw className="w-[0.72em] h-[0.72em]" />
+        </button>
+      </h1>
+      <p className={`text-sm sm:text-base mb-1 flex flex-wrap items-center gap-x-1.5 gap-y-1 ${dark ? 'text-white/70' : 'text-neutral-500'}`}>
+        <span>Software Engineer · Founder,</span>
+        <span className="inline-flex items-center gap-1.5">
+          <Innov8MateMark dark={dark} />
+          <span className={headingColor}>Innov8Mate</span>
+        </span>
+      </p>
+      <p className={`text-xs sm:text-sm mb-5 sm:mb-8 ${dark ? 'text-white/55' : 'text-neutral-400'}`}>
+        <a href={INNOV8MATE_HREF} target="_blank" rel="noreferrer" className={footerLink}>
+          innov8mate.com
+        </a>
+      </p>
+
+      <div className={`space-y-4 sm:space-y-6 text-sm sm:text-lg leading-relaxed ${bodyColor}`}>
+        {variant === 'intro' && (
+          <>
+            <p>
+              I&apos;m a Software Engineer at{' '}
+              <span className={headingColor}>Buildbot Technologies</span>
+              {' '}and the founder of{' '}
+              <a
+                href={INNOV8MATE_HREF}
+                target="_blank"
+                rel="noreferrer"
+                className={`${linkClass} inline-flex items-center gap-1.5 align-baseline`}
+              >
+                <Innov8MateMark dark={dark} />
+                Innov8Mate
+              </a>
+              . Innov8Mate is about helping people innovate, create, and elevate—collaboration around ideas and shipping real projects.
+            </p>
+
+            <p>
+              Stack I reach for most: TypeScript, JavaScript, React, Next.js, Node.js, Go, plus SQL and NoSQL. I care about clear APIs, solid UX, and shipping things people actually use.
+            </p>
+
+            <p>
+              <button
+                type="button"
+                onClick={() => onNavigate?.('fish')}
+                className={`${linkClass} cursor-pointer`}
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit' }}
+              >
+                A rough timeline
+              </button>
+              {' '}of what I&apos;ve done so far, and some{' '}
+              <button
+                type="button"
+                onClick={() => onNavigate?.('orchids')}
+                className={`${linkClass} cursor-pointer`}
+                style={{ background: 'none', border: 'none', padding: 0, font: 'inherit' }}
+              >
+                books
+              </button>
+              {' '}I&apos;ve been into lately.
+            </p>
+          </>
+        )}
+
+        {variant === 'about' && (
+          <>
+            <p>
+              Here&apos;s a rough timeline of what I&apos;ve done so far:
+            </p>
+
+            <ul className={`list-none pl-0 divide-y ${dark ? 'divide-white/10' : 'divide-black/10'}`}>
+              {timelineItems.map((item, i) => {
+                const hasDetail = item.details.length > 0;
+                const isOpen = hasDetail && openTimelineIdx === i;
+                return (
+                  <li key={i}>
+                    {hasDetail ? (
+                      <button
+                        type="button"
+                        onClick={() => setOpenTimelineIdx(isOpen ? null : i)}
+                        aria-expanded={isOpen}
+                        className="w-full text-left flex items-start gap-0 py-3 cursor-pointer"
+                      >
+                        <span className="tabular-nums opacity-60 inline-block w-28 shrink-0 whitespace-nowrap">{item.label}</span>
+                        <span className="flex-1 pr-2 inline-flex items-center gap-2 flex-wrap">
+                          {item.label === 'Founder' ? (
+                            <>
+                              <Innov8MateMark dark={dark} className="h-[1em] w-[1em]" />
+                              <span>{item.title}</span>
+                            </>
+                          ) : (
+                            item.title
+                          )}
+                        </span>
+                        <ChevronDown
+                          size={18}
+                          className={`mt-[2px] opacity-60 transition-transform duration-200 shrink-0 ${isOpen ? 'rotate-180' : ''}`}
+                        />
+                      </button>
+                    ) : (
+                      <div className="flex items-start py-3">
+                        <span className="tabular-nums opacity-60 inline-block w-28 shrink-0 whitespace-nowrap">{item.label}</span>
+                        <span className="flex-1 pr-2 inline-flex items-center gap-2 flex-wrap">
+                          {item.label === 'Founder' ? (
+                            <>
+                              <Innov8MateMark dark={dark} className="h-[1em] w-[1em]" />
+                              <span>{item.title}</span>
+                            </>
+                          ) : (
+                            item.title
+                          )}
+                        </span>
+                      </div>
+                    )}
+                    {hasDetail && (
+                      <div
+                        className="grid transition-[grid-template-rows] duration-300 ease-out"
+                        style={{ gridTemplateRows: isOpen ? '1fr' : '0fr' }}
+                      >
+                        <div className="overflow-hidden">
+                          <div
+                            className={`pl-28 pr-6 pb-3 text-sm sm:text-base transition-opacity duration-300 ease-out ${isOpen ? 'opacity-75' : 'opacity-0'}`}
+                          >
+                            {item.details.length === 1 ? (
+                              <p>{item.details[0]}</p>
+                            ) : (
+                              <ul className="list-disc pl-5 space-y-1">
+                                {item.details.map((d, j) => (
+                                  <li key={j}>{d}</li>
+                                ))}
+                              </ul>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          </>
+        )}
+
+        {variant === 'books' && (
+          <>
+            <p>
+              I&apos;ve been reading a lot lately. A few that have stuck with me:
+            </p>
+
+            <ul className="list-disc pl-5 space-y-1.5 marker:text-current/50">
+              <li>
+                <em>The Alchemist</em> — Paulo Coelho
+              </li>
+              <li>
+                <em>The Monk Who Sold His Ferrari</em> — Robin Sharma
+              </li>
+              <li>
+                <em>Deep Work</em> — Cal Newport
+              </li>
+            </ul>
+          </>
+        )}
+      </div>
+
+      <div className={`mt-8 sm:mt-12 text-xs sm:text-sm flex flex-wrap gap-x-6 gap-y-2 ${footerColor}`}>
+        <a href="https://www.linkedin.com/in/harshavardhan-gulla/" target="_blank" rel="noreferrer" className={footerLink}>linkedin</a>
+        <a href="https://github.com/Harsha30ywffb7" target="_blank" rel="noreferrer" className={footerLink}>github</a>
+        <a href={PORTFOLIO_SITE_HREF} target="_blank" rel="noreferrer" className={footerLink}>
+          site
+        </a>
+        <a href={RESUME_PDF} download className={footerLink}>
+          résumé
+        </a>
+        <button
+          type="button"
+          onClick={handleEmailClick}
+          className={footerLink}
+          style={{ background: 'none', border: 'none', padding: 0, font: 'inherit' }}
+          aria-label="Reveal email"
+        >
+          {emailLabel}
+        </button>
+      </div>
+    </>
+  );
+}
+
+export default function Home() {
+  const [mode, setMode] = useState<Mode>('butterfly');
+  const [fading, setFading] = useState(false);
+  const [isNarrow, setIsNarrow] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    document.documentElement.classList.add('dark');
+    const check = () => setIsNarrow(window.innerWidth < 1024 || window.innerWidth < window.innerHeight);
+    check();
+    setMounted(true);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
+
+  useEffect(() => {
+    const dark = mode === 'fish' || mode === 'orchids';
+    const color = dark ? '#000' : '#fff';
+    document.documentElement.style.backgroundColor = color;
+    document.body.style.backgroundColor = color;
+  }, [mode]);
+
+  const handleSwitch = () => {
+    if (mode === 'orchids') {
+      setFading(true);
+      setTimeout(() => window.location.reload(), 400);
+      return;
+    }
+    setFading(true);
+    setTimeout(() => {
+      const next: Mode = mode === 'butterfly' ? 'fish' : 'orchids';
+      setMode(next);
+      setFading(false);
+    }, 400);
+  };
+
+  const switchTo = (target: Mode) => {
+    if (target === mode) return;
+    setFading(true);
+    setTimeout(() => {
+      setMode(target);
+      setFading(false);
+    }, 400);
+  };
+
+  if (!mounted) {
+    const dark = mode === 'fish' || mode === 'orchids';
+    return <main className={`min-h-screen ${dark ? 'bg-black' : 'bg-white'}`} />;
+  }
+
+  if (mode === 'fish') {
+    if (isNarrow) {
+      return (
+        <main className="min-h-[100dvh] bg-black text-white flex flex-col transition-opacity duration-500" style={{ opacity: fading ? 0 : 1 }}>
+          <div className="w-full overflow-hidden shrink-0" style={{ aspectRatio: '16 / 9' }}>
+            <AsciiDither
+              key="fish"
+              src={['/fish3.mp4', '/fish4.mp4', '/fish2.mp4']}
+              cols={160}
+              color="source"
+              threshold={0.08}
+              saturation={2}
+              fill
+              cover
+              invert
+              darkMode
+              binarySize
+              xOffsetBySrc={['-35%', '40%', '0%']}
+              yOffsetBySrc={['15%', '10%', '15%']}
+              scale={1.4}
+              batched
+              className="w-full h-full"
+            />
+          </div>
+          <div className="flex justify-center px-8 sm:px-12 pt-6 pb-8">
+            <div className="w-full max-w-[400px]">
+              <BioContent dark onSwitch={handleSwitch} variant="about" />
+            </div>
+          </div>
+        </main>
+      );
+    }
+    return (
+      <main className="fixed inset-0 bg-black text-white overflow-hidden transition-opacity duration-500" style={{ opacity: fading ? 0 : 1 }}>
+        <div className="absolute inset-0 z-0">
+          <AsciiDither
+            key="fish"
+            src={['/fish3.mp4', '/fish4.mp4', '/fish2.mp4']}
+            cols={280}
+            color="source"
+            threshold={0.08}
+            saturation={2}
+            fill
+            cover
+            invert
+            darkMode
+            binarySize
+            className="w-full h-full"
+          />
+        </div>
+        <div className="absolute inset-0 z-10 flex justify-center px-6 sm:px-12 overflow-y-auto">
+          <div className="max-w-[640px] py-16 my-auto">
+            <BioContent dark onSwitch={handleSwitch} variant="about" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (mode === 'orchids') {
+    if (isNarrow) {
+      return (
+        <main className="h-[100dvh] overflow-hidden bg-black text-white flex flex-col justify-center transition-opacity duration-500" style={{ opacity: fading ? 0 : 1 }}>
+          <div className="px-6 pb-6 mx-auto w-full max-w-[480px]">
+            <BioContent dark onSwitch={handleSwitch} variant="books" />
+          </div>
+          <div className="w-full overflow-hidden" style={{ aspectRatio: '16 / 9' }}>
+            <AsciiDither
+              key="orchids"
+              src="/orchids.mp4"
+              cols={180}
+              color="source"
+              threshold={0.2}
+              saturation={2}
+              fill
+              cover
+              invert
+              darkMode
+              binarySize
+              pureColor
+              loopPauseMs={400}
+              playbackRateSchedule={[[0, 1], [25, 0.4]]}
+              scale={1.3}
+              batched
+              className="w-full h-full"
+            />
+          </div>
+        </main>
+      );
+    }
+    return (
+      <main className="fixed inset-0 bg-black text-white overflow-hidden transition-opacity duration-500" style={{ opacity: fading ? 0 : 1 }}>
+        <div className="absolute inset-0 z-0" style={{ transform: 'translateY(120px)' }}>
+          <AsciiDither
+            key="orchids"
+            src="/orchids.mp4"
+            cols={280}
+            color="source"
+            threshold={0.2}
+            saturation={2}
+            fill
+            cover
+            invert
+            darkMode
+            binarySize
+            pureColor
+            loopPauseMs={400}
+            playbackRateSchedule={[[0, 1], [25, 0.4]]}
+            className="w-full h-full"
+          />
+        </div>
+        <div className="absolute inset-0 z-10 flex items-start justify-start overflow-y-auto pt-[98px] pl-[114px]">
+          <div className="max-w-[640px]">
+            <BioContent dark onSwitch={handleSwitch} variant="books" />
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  if (isNarrow) {
+    return (
+      <main className="min-h-screen bg-white text-neutral-800 flex flex-col justify-center transition-opacity duration-500" style={{ opacity: fading ? 0 : 1 }}>
+        <div className="mx-auto px-6 sm:px-8 pt-8 pb-6 max-w-[480px] sm:max-w-[640px] lg:max-w-[820px] w-full">
+          <BioContent dark={false} onSwitch={handleSwitch} onNavigate={switchTo} />
+        </div>
+        <div className="w-full overflow-hidden" style={{ aspectRatio: '9 / 16' }}>
+          <AsciiDither
+            src="/butterfly.mp4"
+            cols={100}
+            color="source"
+            threshold={0.22}
+            fill
+            cover
+            loopPauseMs={400}
+            maxRenderFps={25}
+            offsetYSchedule={[[0, '-20%'], [4.2014, '0%'], [9.4918, '-20%']]}
+            batched
+            className="w-full h-full"
+          />
+        </div>
+      </main>
+    );
+  }
+
+  return (
+    <main className="fixed inset-0 bg-white text-neutral-800 overflow-hidden transition-opacity duration-500" style={{ opacity: fading ? 0 : 1 }}>
+      <div className="h-full flex flex-row">
+        {/* Text left — fills remaining space, paragraph centered in it */}
+        <div className="flex-1 flex items-center justify-center relative z-10">
+          <div className="px-6 py-16 sm:py-24 w-full max-w-[580px]">
+            <BioContent dark={false} onSwitch={handleSwitch} onNavigate={switchTo} />
+          </div>
+        </div>
+
+        {/* Butterfly right — full height, sized to video aspect */}
+        <div className="h-full overflow-hidden relative" style={{ width: '35%', borderLeft: '1px solid rgba(0,0,0,0.1)' }}>
+          <AsciiDither
+            src="/butterfly.mp4"
+            cols={140}
+            color="source"
+            threshold={0.22}
+            fill
+            cover
+            loopPauseMs={400}
+            maxRenderFps={25}
+            className="w-full h-full"
+          />
+        </div>
+      </div>
+    </main>
+  );
+}
